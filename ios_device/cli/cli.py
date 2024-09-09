@@ -15,7 +15,7 @@ class Enconding(json.JSONEncoder):
 
 def print_json(buf, format=True):
     if format == 'json':
-        formatted_json = json.dumps(buf, indent=4, cls=Enconding)
+        formatted_json = json.dumps(buf, cls=Enconding)
         print(formatted_json)
     elif format == 'flush':
         print(f'\r{buf}', end='', flush=True)
