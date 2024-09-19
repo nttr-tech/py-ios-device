@@ -165,22 +165,27 @@ class IOSMonitor:
             self.stop()
             self.logger.info('Monitoring stopped.')
 
-    def start_tunnel_server(self):
-        if self.is_port_in_use(3333):
-            self.logger.info('Port 3333 is already in use. Assuming iOS Tunnel Server is already running.')
-            return True
-
+    def get_tunnel_server_path(self):
         tunnel_server_path = '/usr/local/rtk/osx/ios17/bin/ios_tunnel_server'
         if not os.path.exists(tunnel_server_path):
             tunnel_server_path = '/usr/local/rte/osx/ios17/bin/ios_tunnel_server'
         if not os.path.exists(tunnel_server_path):
             self.logger.error(f'iOS Tunnel Server executable not found at: {tunnel_server_path}')
+            return None
+        return tunnel_server_path
+
+    def start_tunnel_server(self):
+        if self.is_port_in_use(3333):
+            self.logger.info('Port 3333 is already in use. Assuming iOS Tunnel Server is already running.')
+            return True
+
+        tunnel_server_path = self.get_tunnel_server_path()
+        if not tunnel_server_path:
             return False
         cmd = f'{tunnel_server_path} start'
 
-        try:
-            subprocess.Popen(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, preexec_fn=os.setpgrp)
-        except subprocess.SubprocessError as e:
+        exit_code = os.system(cmd)
+        if exit_code != 0:
             self.logger.error(f'Failed to start iOS Tunnel Server: {e}')
             return False
 
@@ -199,7 +204,19 @@ class IOSMonitor:
 
     def stop_tunnel_server(self):
         self.logger.info('Stopping iOS Tunnel Server')
-        cmd = 'sudo pkill -f "ios_tunnel_server start"'
+
+        tunnel_server_path = self.get_tunnel_server_path()
+        if not tunnel_server_path:
+            return False
+        cmd = f'{tunnel_server_path} stop'
+
+        exit_code = os.system(cmd)
+        if exit_code == 0:
+            self.logger.info('Successfully stopped iOS Tunnel Server')
+            return
+
+        # stop で止まらない時があるので強制的に止めるコマンドも発行しておく
+        cmd = 'sudo pkill -f "ios_tunnel_server"'
         exit_code = os.system(cmd)
         if exit_code == 0:
             self.logger.info('Successfully stopped iOS Tunnel Server')
@@ -213,18 +230,26 @@ class IOSMonitor:
 
 def main(udid):
     monitor = IOSMonitor(udid)
-    try:
-        tunnel_server_started = monitor.start_tunnel_server()
-        if not tunnel_server_started:
-            monitor.logger.error('Exiting due to failure in starting iOS Tunnel Server.')
-            return
+    error_count = 0
+    while True:
+        try:
+            tunnel_server_started = monitor.start_tunnel_server()
+            if not tunnel_server_started:
+                monitor.logger.error('Exiting due to failure in starting iOS Tunnel Server.')
+                return
 
-        monitor.run()
-    finally:
-        # do nothing. ios_tunnel_server は常駐型にしなければならないため stop させない
-        # monitor.stop_tunnel_server()
-        # monitor.logger.info('iOS Tunnel Server stopped.')
-        pass
+            monitor.run()
+            return
+        except GracefulExit:
+            return
+        except Exception:
+            error_count += 1
+            monitor.logger.exception('Failed to connect pymobiledevice3.')
+            if 10 < error_count:
+                monitor.logger.error('Exceeded retries for restarting pymobiledevice3.')
+                return
+            monitor.stop_tunnel_server()
+            time.sleep(1)
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
