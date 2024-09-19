@@ -188,7 +188,7 @@ class IOSTunnelServer:
 
     def stop_tunnel_process(self):
         self.logger.info('Stopping iOS tunnel process')
-        cmd = 'sudo pkill -f pymobiledevice3'
+        cmd = 'sudo pkill -9 pymobiledevice3'
         exit_code = os.system(cmd)
 
         if exit_code == 0:
@@ -245,7 +245,7 @@ def main():
         server.run()
     elif action == 'stop':
         server.logger.info('Stopping iOS Tunnel Server')
-        server.stop_tunnel_process()
+        server.cleanup()
     else:
         server.logger.error(f"Invalid action: {action}. Use 'start' or 'stop'.")
 
