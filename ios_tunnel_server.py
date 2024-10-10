@@ -180,6 +180,7 @@ class IOSTunnelServer:
         while self.should_run.is_set():
             try:
                 line = self.output_queue.get(timeout=1)
+                # self.logger.debug(f"pymobiledevice3-output: {line}")
                 if 'Created tunnel' in line:
                     connection_info = self.parse_connection_info(line)
                     if connection_info:
