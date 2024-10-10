@@ -124,10 +124,11 @@ class IOSTunnelServer:
                 raise OSError(f'Command failed with exit code: {exit_code}')
 
             time.sleep(2)
-            with open('/tmp/ios_tunnel.log', 'r') as log_file:
-                log_content = log_file.read()
-                if "Error" in log_content or "Failed" in log_content:
-                    raise OSError(f"Failed to start tunnel process. Log content: {log_content}")
+            # iOS17.4未満の端末が接続されているとエラーが出力されてしまうためスキップ
+            # with open('/tmp/ios_tunnel.log', 'r') as log_file:
+                # log_content = log_file.read()
+                # if "Error" in log_content or "Failed" in log_content:
+                #     raise OSError(f"Failed to start tunnel process. Log content: {log_content}")
 
             self.logger.info('iOS tunnel process started successfully')
             return True
