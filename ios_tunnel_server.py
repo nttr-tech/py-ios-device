@@ -183,25 +183,8 @@ class IOSTunnelServer:
                             self.logger.info(f'Session removed: {removed_session}')
                         else:
                             self.logger.warning(f'Tried to remove non-existent session: {disconnected_session}')
-                elif 'got exception from start-tunnel-task-' in line:
-                    self.logger.warning("Detected potential issue with tunnel, attempting to restart")
-                    if self.restart_tunnel_process():
-                        self.logger.info("Tunnel process restarted successfully")
-                    else:
-                        self.logger.error("Failed to restart tunnel process")
             except queue.Empty:
                 continue
-
-    def restart_tunnel_process(self):
-        self.logger.info("Restarting tunnel process")
-        self.stop_tunnel_process()
-        time.sleep(1)  # プロセスが完全に終了するのを待つ
-        success = self.start_tunnel_process()
-        if success:
-            self.logger.info("Tunnel process restarted successfully")
-        else:
-            self.logger.error("Failed to restart tunnel process")
-        return success
 
     def stop_tunnel_process(self):
         self.logger.info('Stopping iOS tunnel process')
