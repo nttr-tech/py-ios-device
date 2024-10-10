@@ -153,6 +153,16 @@ class IOSTunnelServer:
             }
         return None
 
+    def parse_disconnection_info(self, line):
+        host_match = re.search(r'--rsd ([\w:]+)', line)
+        port_match = re.search(r'(\d+)$', line)
+
+        if host_match and port_match:
+            for key, value in self.sessions.items():
+                if value['host'] == host_match.group(1) and value['port'] == int(port_match.group(1)):
+                    return value
+        return None
+
     def output_reader(self):
         with open('/tmp/ios_tunnel.log', 'r') as log_file:
             while self.should_run.is_set():
@@ -176,7 +186,7 @@ class IOSTunnelServer:
                         self.sessions[connection_info['udid']] = connection_info
                         self.logger.info(f'New session added: {connection_info}')
                 elif 'disconnected from tunnel' in line:
-                    disconnected_session = self.parse_connection_info(line)
+                    disconnected_session = self.parse_disconnection_info(line)
                     if disconnected_session:
                         removed_session = self.sessions.pop(disconnected_session['udid'], None)
                         if removed_session:
