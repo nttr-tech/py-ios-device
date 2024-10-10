@@ -115,7 +115,7 @@ class IOSTunnelServer:
         if not pymobiledevice3_path:
             self.logger.error(f'pymobiledevice3 executable not found at: {pymobiledevice3_path}')
             return False
-        cmd = f'sudo {pymobiledevice3_path} remote tunneld --usb --no-wifi > /tmp/ios_tunnel.log 2>&1 &'
+        cmd = f'sudo {pymobiledevice3_path} remote tunneld --usbmux --no-usb --no-wifi --no-mobdev2 > /tmp/ios_tunnel.log 2>&1 &'
         self.logger.info(f'Starting iOS tunnel process with command: {cmd}')
 
         try:
