@@ -111,6 +111,9 @@ class IOSTunnelServer:
         return pymobiledevice3_path
 
     def start_tunnel_process(self):
+        # この時点でpymobiledevice3が起動中だと正常動作しないため、いったん終了させる
+        self.stop_tunnel_process()
+
         pymobiledevice3_path = self.get_pymobiledevice3_path()
         if not pymobiledevice3_path:
             self.logger.error(f'pymobiledevice3 executable not found at: {pymobiledevice3_path}')
@@ -200,7 +203,7 @@ class IOSTunnelServer:
 
     def stop_tunnel_process(self):
         self.logger.info('Stopping iOS tunnel process')
-        cmd = 'sudo pkill -9 pymobiledevice3'
+        cmd = 'sudo pkill -9 -f "pymobiledevice3 remote tunneld"'
         exit_code = os.system(cmd)
 
         if exit_code == 0:
