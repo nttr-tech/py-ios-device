@@ -10,6 +10,7 @@ import time
 
 from flask import Flask, jsonify, request
 from werkzeug.serving import WSGIRequestHandler
+from logging.handlers import TimedRotatingFileHandler
 
 
 class IOSTunnelServer:
@@ -39,7 +40,7 @@ class IOSTunnelServer:
         log_file_path = os.path.join(os.getcwd(), 'ios_tunnel_server.log')
 
         # File handler for all levels
-        fh = logging.FileHandler(log_file_path)
+        fh = TimedRotatingFileHandler(log_file_path, when="midnight", interval=1, backupCount=7)
         fh.setLevel(logging.DEBUG)
         fh.setFormatter(formatter)
         logger.addHandler(fh)

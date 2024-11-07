@@ -11,6 +11,7 @@ import requests
 
 from ios_device.remote.remote_lockdown import RemoteLockdownClient
 from ios_device.servers.Instrument import InstrumentServer
+from logging.handlers import TimedRotatingFileHandler
 
 
 class GracefulExit(Exception):
@@ -87,7 +88,7 @@ class IOSMonitor:
         log_file_path = os.path.join(os.getcwd(), 'ios17_monitor.log')
 
         # File handler for all levels
-        fh = logging.FileHandler(log_file_path)
+        fh = TimedRotatingFileHandler(log_file_path, when="midnight", interval=1, backupCount=7)
         fh.setLevel(logging.DEBUG)
         fh.setFormatter(formatter)
         logger.addHandler(fh)
