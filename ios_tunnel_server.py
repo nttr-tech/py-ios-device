@@ -104,12 +104,30 @@ class IOSTunnelServer:
             return s.connect_ex(('localhost', self.port)) == 0
 
     def get_pymobiledevice3_path(self):
-        pymobiledevice3_path = '/usr/local/rtk/osx/ios17/bin/pymobiledevice3'
-        if not os.path.exists(pymobiledevice3_path):
-            pymobiledevice3_path = '/usr/local/rte/osx/ios17/bin/pymobiledevice3'
-            if not os.path.exists(pymobiledevice3_path):
-                return None
-        return pymobiledevice3_path
+        if getattr(sys, 'frozen', False):
+            current_file_path = os.path.dirname(os.path.abspath(sys.executable))
+        else:
+            current_file_path = os.path.dirname(os.path.abspath(__file__))
+
+        pymobiledevice3_path = os.path.join(current_file_path, 'pymobiledevice3')
+        if os.path.exists(pymobiledevice3_path):
+            return pymobiledevice3_path
+
+        architecture = os.uname().machine
+        if architecture == 'arm64':
+            additional_path = architecture
+        else:
+            additional_path = ''
+
+        pymobiledevice3_path = os.path.join('/usr/local/rtk/osx/ios17/bin', additional_path, 'pymobiledevice3')
+        if os.path.exists(pymobiledevice3_path):
+            return pymobiledevice3_path
+
+        pymobiledevice3_path = os.path.join('/usr/local/rte/osx/ios17/bin', additional_path, 'pymobiledevice3')
+        if os.path.exists(pymobiledevice3_path):
+            return pymobiledevice3_path
+
+        return None
 
     def start_tunnel_process(self):
         # この時点でpymobiledevice3が起動中だと正常動作しないため、いったん終了させる
