@@ -115,15 +115,15 @@ class IOSTunnelServer:
 
         architecture = os.uname().machine
         if architecture == 'arm64':
-            additional_path = architecture
+            osx_path = 'osx_arm64'
         else:
-            additional_path = ''
+            osx_path = 'osx'
 
-        pymobiledevice3_path = os.path.join('/usr/local/rtk/osx/ios17/bin', additional_path, 'pymobiledevice3')
+        pymobiledevice3_path = os.path.join('/usr/local/rtk', osx_path, 'ios17/bin', 'pymobiledevice3')
         if os.path.exists(pymobiledevice3_path):
             return pymobiledevice3_path
 
-        pymobiledevice3_path = os.path.join('/usr/local/rte/osx/ios17/bin', additional_path, 'pymobiledevice3')
+        pymobiledevice3_path = os.path.join('/usr/local/rte', osx_path, 'ios17/bin', 'pymobiledevice3')
         if os.path.exists(pymobiledevice3_path):
             return pymobiledevice3_path
 
