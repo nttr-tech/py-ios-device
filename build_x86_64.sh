@@ -20,6 +20,7 @@ for arch in "${architectures[@]}"; do
   arch -${arch} pip install pyasn1
 
   pyinstaller --onefile --name ios_tunnel_server \
+  --distpath dist/${arch} \
   --hidden-import ios_device \
   --hidden-import flask \
   --collect-all ios_device \
@@ -27,6 +28,7 @@ for arch in "${architectures[@]}"; do
   ios_tunnel_server.py
 
   pyinstaller --onefile --name ios17_monitor \
+  --distpath dist/${arch} \
   --hidden-import ios_device \
   --hidden-import requests \
   --hidden-import OpenSSL \
