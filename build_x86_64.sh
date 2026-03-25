@@ -23,8 +23,10 @@ for arch in "${architectures[@]}"; do
   --distpath dist/${arch} \
   --hidden-import ios_device \
   --hidden-import flask \
+  --hidden-import requests \
   --collect-all ios_device \
   --collect-all flask \
+  --collect-all requests \
   ios_tunnel_server.py
 
   pyinstaller --onefile --name ios17_monitor \
