@@ -18,6 +18,9 @@ for arch in "${architectures[@]}"; do
   arch -${arch} pip install requests
   arch -${arch} pip install pyOpenSSL
   arch -${arch} pip install pyasn1
+  arch -${arch} pip install construct
+  arch -${arch} pip install hyperframe
+  arch -${arch} pip install coloredlogs
 
   pyinstaller --onefile --name ios_tunnel_server \
   --distpath dist/${arch} \
@@ -35,9 +38,15 @@ for arch in "${architectures[@]}"; do
   --hidden-import requests \
   --hidden-import OpenSSL \
   --hidden-import pyasn1 \
+  --hidden-import construct \
+  --hidden-import hyperframe \
+  --hidden-import coloredlogs \
   --collect-all ios_device \
   --collect-all requests \
   --collect-all OpenSSL \
   --collect-all pyasn1 \
+  --collect-all construct \
+  --collect-all hyperframe \
+  --collect-all coloredlogs \
   ios17_monitor.py
 done
