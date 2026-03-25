@@ -8,6 +8,7 @@ import socket
 import threading
 import time
 
+import requests as requests_lib
 from flask import Flask, jsonify, request
 from werkzeug.serving import WSGIRequestHandler
 from logging.handlers import TimedRotatingFileHandler
@@ -280,6 +281,10 @@ def main():
         server.run()
     elif action == 'stop':
         server.logger.info('Stopping iOS Tunnel Server')
+        try:
+            requests_lib.post(f'http://localhost:{server.port}/shutdown', timeout=5)
+        except Exception:
+            pass
         server.cleanup()
     else:
         server.logger.error(f"Invalid action: {action}. Use 'start' or 'stop'.")
