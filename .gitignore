@@ -10,3 +10,4 @@ build
 htmlcov/*
 tests/__out__/*
 .tox
+*.spec
