@@ -107,19 +107,31 @@ class IOSMonitor:
         self.logger.info('Received signal to stop. Exiting gracefully...')
         raise GracefulExit()
 
+    def run_with_timeout(self, func, description, timeout=5):
+        thread = threading.Thread(target=func)
+        thread.daemon = True
+        thread.start()
+        thread.join(timeout=timeout)
+        if thread.is_alive():
+            self.logger.warning(f'{description} timed out after {timeout} seconds')
+            return False
+        return True
+
     def stop(self):
         with self.lock:
             if self.sysmontap:
                 try:
                     self.logger.info('Starting cleanup sysmontap')
-                    self.sysmontap.stop()
+                    self.run_with_timeout(self.sysmontap.stop, 'sysmontap.stop()')
                 except Exception as e:
                     self.logger.error(f'Error stopping sysmontap: {e}')
+                finally:
+                    self.sysmontap = None
 
             if self.rpc:
                 try:
                     self.logger.info('Starting cleanup rpc')
-                    self.rpc.stop()
+                    self.run_with_timeout(self.rpc.stop, 'rpc.stop()')
                 except Exception as e:
                     self.logger.error(f'Error stopping RPC: {e}')
                 finally:
