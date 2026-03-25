@@ -10,4 +10,5 @@ build
 htmlcov/*
 tests/__out__/*
 .tox
-*.spec
+ios_tunnel_server.spec
+ios17_monitor.spec
