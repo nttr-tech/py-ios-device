@@ -22,12 +22,14 @@ class IOS17Sysmontap:
     def __init__(self, rpc, logger):
         self.rpc = rpc
         self.logger = logger
+        self.last_data_time = time.time()
         self.setup_monitoring()
 
     def dropped_message(self, res):
         self.logger.debug(f'[DROP] {res.selector} {res.raw.channel_code}')
 
     def on_sysmontap_message(self, res):
+        self.last_data_time = time.time()
         if isinstance(res.selector, list):
             if isinstance(res.selector, list):
                 for data in res.selector:
@@ -67,6 +69,7 @@ class IOSMonitor:
     API_URL = 'http://localhost:3333/sessions'
     RETRY_DELAY = 5
     MONITOR_INTERVAL = 5  # 1分ごとに接続を確認
+    DATA_TIMEOUT = 20  # データ受信タイムアウト（秒）
 
     def __init__(self, udid):
         self.udid = udid
@@ -162,6 +165,7 @@ class IOSMonitor:
             self.logger.info('InstrumentServer initialized')
             self.sysmontap = IOS17Sysmontap(self.rpc, self.logger)
             self.sysmontap.start()
+            self.sysmontap.last_data_time = time.time()
 
     def run(self):
         self.logger.info(f'Starting iOS Device Monitoring Script for UDID: {self.udid}')
@@ -171,6 +175,9 @@ class IOSMonitor:
                 self.connect_and_monitor(host, port)
                 while True:
                     time.sleep(1)
+                    if self.sysmontap and time.time() - self.sysmontap.last_data_time > self.DATA_TIMEOUT:
+                        self.logger.warning(f'No data received for {self.DATA_TIMEOUT} seconds, reconnecting...')
+                        raise ConnectionError(f'Data timeout after {self.DATA_TIMEOUT} seconds')
         except GracefulExit:
             self.logger.info('Received exit signal, stopping monitoring.')
         finally:
@@ -197,6 +204,7 @@ def main(udid):
             if 10 < error_count:
                 monitor.logger.error('Exceeded retries for restarting pymobiledevice3.')
                 return
+            time.sleep(monitor.RETRY_DELAY)
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
