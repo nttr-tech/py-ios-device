@@ -222,6 +222,7 @@ class IOSTunnelServer:
 
     def stop_tunnel_process(self):
         self.logger.info('Stopping iOS tunnel process')
+        self.sessions = {}
         cmd = 'sudo pkill -9 -f "pymobiledevice3 remote tunneld"'
         exit_code = os.system(cmd)
 
